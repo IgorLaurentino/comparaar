@@ -7,9 +7,15 @@ import os
 st.set_page_config(page_title="Comparador de Ar Condicionado", page_icon="❄️", layout="wide")
 
 # ==========================================
-# 💰 CONFIGURAÇÃO DE AFILIADO
-# Substitua pelo seu ID real da Amazon
-AMAZON_TAG = "SEU-ID-AQUI-20" 
+# 💰 CONFIGURAÇÃO DE AFILIADO (MODO SEGURO)
+# Tenta pegar do cofre (Secrets) do Streamlit. 
+# Se você estiver rodando no PC, precisa do arquivo .streamlit/secrets.toml
+try:
+    AMAZON_TAG = st.secrets["AMAZON_TAG"]
+except:
+    # Valor de fallback ou aviso de erro para debug
+    st.error("⚠️ ERRO: ID de Afiliado não configurado! Configure nos 'Secrets' do Streamlit ou no secrets.toml local.")
+    st.stop()
 # ==========================================
 
 # --- ESTILOS CSS ---
@@ -20,12 +26,6 @@ st.markdown("""
         width: 100%;
         border-radius: 8px;
         font-weight: bold;
-    }
-    /* Estilo para destacar o botão da Amazon */
-    .amazon-btn {
-        background-color: #FF9900 !important;
-        color: black !important;
-        border: none;
     }
     .fonte-dados { font-size: 0.8rem; color: #6c757d; text-align: center; margin-top: 40px; border-top: 1px solid #ddd; padding-top: 10px;}
 </style>
@@ -49,7 +49,7 @@ def carregar_dados():
     mapa = {'Capacidade de Refrigeração Nominal (Btu/h)': 'BTU', 'Consumo Anual de Energia (kWh)': 'Consumo'}
     df_i = df_i.rename(columns=mapa)
     
-    # Validação básica
+    # Validação
     if not {'Marca', 'Modelo', 'BTU', 'Consumo'}.issubset(df_i.columns): 
         return None, None
     
@@ -126,7 +126,7 @@ def bloco_produto(label, key):
     custo_mensal = cons_mensal * tarifa
     st.metric("Custo Energia/Mês", f"R$ {custo_mensal:.2f}")
     
-    return {'p': preco, 'c': custo_mensal, 'nome': f"{marca} {modelo}", 'link': link_amazon}
+    return {'p': preco, 'c': custo_mensal, 'nome': f"{marca} {modelo}", 'link': link_amazon, 'consumo_anual': item['Consumo']}
 
 c1, c2 = st.columns(2)
 with c1: res_a = bloco_produto("A", "a")
@@ -135,21 +135,40 @@ with c2: res_b = bloco_produto("B", "b")
 # --- ANÁLISE ---
 st.divider()
 if res_a and res_b:
-    diff = abs(res_a['c'] - res_b['c'])
-    venc = "A" if res_a['c'] < res_b['c'] else "B"
-    link_venc = res_a['link'] if venc == "A" else res_b['link']
-    
     st.subheader("🏆 Veredito Financeiro")
+    
     col_res1, col_res2 = st.columns([1,1])
     
+    # --- LÓGICA DE COMPARAÇÃO ---
+    sao_iguais = (res_a['nome'] == res_b['nome'])
+    empate_tecnico = (abs(res_a['c'] - res_b['c']) < 0.01) and (abs(res_a['p'] - res_b['p']) < 0.01)
+    
     with col_res1:
-        st.success(f"A Opção **{venc}** é mais econômica na conta de luz.")
-        st.info(f"Economia mensal: **R$ {diff:.2f}**")
-        if diff > 0: st.write(f"Em 5 anos, essa diferença vira **R$ {(diff * 60):.2f}** no seu bolso.")
-        st.markdown(f"👉 **Aproveite e compre a melhor opção:**")
-        st.link_button(f"Comprar Opção {venc} na Amazon", link_venc)
+        if sao_iguais:
+            st.warning("⚠️ **Você selecionou o mesmo modelo nas duas opções.**")
+            st.write("Se quiser comparar economias, escolha modelos diferentes (ex: Inverter vs Convencional).")
+            
+        elif empate_tecnico:
+            st.info("⚖️ **Empate Técnico!**")
+            st.write("Ambos os modelos têm o mesmo preço e consumo de energia. A escolha depende da sua preferência de marca ou design.")
+            
+        else:
+            # Caso normal de competição
+            diff = abs(res_a['c'] - res_b['c'])
+            venc = "A" if res_a['c'] < res_b['c'] else "B"
+            link_venc = res_a['link'] if venc == "A" else res_b['link']
+            
+            st.success(f"A Opção **{venc}** é mais econômica na conta de luz.")
+            st.info(f"Economia mensal: **R$ {diff:.2f}**")
+            
+            if diff > 0:
+                st.write(f"Em 5 anos, essa diferença vira **R$ {(diff * 60):.2f}** no seu bolso.")
+                
+            st.markdown(f"👉 **Aproveite e compre a melhor opção:**")
+            st.link_button(f"Comprar Opção {venc} na Amazon", link_venc)
 
     with col_res2:
+        # Gráfico (mostra mesmo se for igual, para confirmar visualmente)
         meses = list(range(37))
         va = [res_a['p'] + (res_a['c']*m) for m in meses]
         vb = [res_b['p'] + (res_b['c']*m) for m in meses]
@@ -158,8 +177,7 @@ if res_a and res_b:
         fig.add_trace(go.Scatter(x=meses, y=va, name="Opção A"))
         fig.add_trace(go.Scatter(x=meses, y=vb, name="Opção B"))
         
-        # --- CORREÇÃO AQUI (Width Stretch) ---
         fig.update_layout(title="Gasto Total (3 Anos)", height=300, margin=dict(l=20, r=20, t=30, b=20))
-        st.plotly_chart(fig, width="stretch") # Corrigido conforme aviso
+        st.plotly_chart(fig, width="stretch")
 
 st.markdown("<div class='fonte-dados'>Dados técnicos: INMETRO | Tarifas: ANEEL</div>", unsafe_allow_html=True)
