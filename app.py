@@ -149,7 +149,7 @@ if res_a and res_b:
             st.write("Se quiser comparar economias, escolha modelos diferentes (ex: Inverter vs Convencional).")
             
         elif empate_tecnico:
-            st.info("⚖️ **Empate Técnico!**")
+            st.info("**Empate Técnico!**")
             st.write("Ambos os modelos têm o mesmo preço e consumo de energia. A escolha depende da sua preferência de marca ou design.")
             
         else:
@@ -181,4 +181,5 @@ if res_a and res_b:
         st.plotly_chart(fig, width="stretch")
 
 st.markdown("<div class='fonte-dados'>Dados técnicos: INMETRO | Tarifas: ANEEL</div>", unsafe_allow_html=True)
+
 
