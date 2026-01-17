@@ -78,7 +78,7 @@ if df_itens is None or df_tarifas is None:
 
 # --- SIDEBAR: CONFIGURAÇÕES ---
 with st.sidebar:
-    st.header("📍 Configurações de Energia")
+    st.header(" Configurações de Energia")
     
     estados_disp = sorted(df_tarifas['estado'].unique())
     estado_sel = st.selectbox("Estado", estados_disp)
@@ -164,7 +164,7 @@ valid_b = False
 
 # --- PRODUTO A ---
 with col_a:
-    st.markdown("### 🅰️ Opção A")
+    st.markdown("###  Opção A")
     try:
         item_a = selecionar_produto("A", "a")
         
@@ -188,7 +188,7 @@ with col_a:
 
 # --- PRODUTO B ---
 with col_b:
-    st.markdown("### 🅱️ Opção B")
+    st.markdown("###  Opção B")
     try:
         item_b = selecionar_produto("B", "b")
         
@@ -214,7 +214,7 @@ with col_b:
 st.divider()
 
 if valid_a and valid_b:
-    st.subheader("📊 Análise Financeira")
+    st.subheader(" Análise Financeira")
     
     diff_mensal = abs(custo_mensal_a - custo_mensal_b)
     diff_preco = abs(preco_a - preco_b)
@@ -224,7 +224,7 @@ if valid_a and valid_b:
     c1, c2 = st.columns([1, 2])
     
     with c1:
-        st.info(f"💡 Economia mensal escolhendo a Opção {mais_economico}: **R$ {diff_mensal:.2f}**")
+        st.info(f" Economia mensal escolhendo a Opção {mais_economico}: **R$ {diff_mensal:.2f}**")
         
         if diff_mensal > 0 and diff_preco > 0:
             if mais_economico == mais_caro_compra:
@@ -232,11 +232,11 @@ if valid_a and valid_b:
                 if meses_payback < 120:
                     anos = int(meses_payback // 12)
                     meses = int(meses_payback % 12)
-                    st.success(f"💰 **Payback:** O investimento se paga em **{anos} anos e {meses} meses**.")
+                    st.success(f" **Payback:** O investimento se paga em **{anos} anos e {meses} meses**.")
                 else:
                     st.warning("O retorno financeiro demora mais de 10 anos.")
             else:
-                st.success(f"🚀 O modelo {mais_economico} é mais barato e mais econômico!")
+                st.success(f" O modelo {mais_economico} é mais barato e mais econômico!")
         elif diff_mensal == 0:
             st.warning("Consumo idêntico.")
             
@@ -254,7 +254,8 @@ if valid_a and valid_b:
 st.markdown("""
 <div class='fonte-dados'>
     <p><strong>Fontes dos Dados:</strong></p>
-    <p>⚡ Tarifas: ANEEL (Agência Nacional de Energia Elétrica).</p>
-    <p>❄️ Eficiência: INMETRO (Programa Brasileiro de Etiquetagem).</p>
+    <p> Tarifas: ANEEL (Agência Nacional de Energia Elétrica).</p>
+    <p> Eficiência: INMETRO (Programa Brasileiro de Etiquetagem).</p>
 </div>
+
 """, unsafe_allow_html=True)
