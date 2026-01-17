@@ -9,7 +9,7 @@ st.set_page_config(page_title="Comparador de Ar Condicionado", page_icon="❄️
 # ==========================================
 # 💰 CONFIGURAÇÃO DE AFILIADO
 # Substitua pelo seu ID real da Amazon
-AMAZON_TAG = "comparaar1-20" 
+AMAZON_TAG = "SEU-ID-AQUI-20" 
 # ==========================================
 
 # --- ESTILOS CSS ---
@@ -33,49 +33,38 @@ st.markdown("""
 
 # --- FUNÇÃO GERADORA DE LINK AMAZON ---
 def gerar_link_amazon(marca, modelo):
-    # Cria uma busca: "Ar Condicionado [Marca] [Modelo]"
     termo_busca = f"Ar condicionado {marca} {modelo}"
-    # Substitui espaços por + para url
     termo_formatado = termo_busca.replace(" ", "+")
-    # Retorna o link de busca com sua TAG de afiliado
     return f"https://www.amazon.com.br/s?k={termo_formatado}&tag={AMAZON_TAG}"
 
 # --- CARREGAMENTO DE DADOS ---
 @st.cache_data
 def carregar_dados():
-    # Verifica se os arquivos existem
     if not os.path.exists("dados_limpos.csv") or not os.path.exists("Tarifas.csv"):
         return None, None
     
-    # Carrega base de itens
     df_i = pd.read_csv("dados_limpos.csv")
     
-    # Padroniza nomes das colunas (para evitar erro de chave)
+    # Renomear colunas
     mapa = {'Capacidade de Refrigeração Nominal (Btu/h)': 'BTU', 'Consumo Anual de Energia (kWh)': 'Consumo'}
     df_i = df_i.rename(columns=mapa)
     
-    # Verifica se colunas essenciais existem
+    # Validação básica
     if not {'Marca', 'Modelo', 'BTU', 'Consumo'}.issubset(df_i.columns): 
         return None, None
     
-    # Limpeza de dados nulos
+    # Limpeza
     df_i = df_i.dropna(subset=['Marca', 'Modelo'])
     
-    # Função para limpar nomes de marcas "sujos"
     def limpar_marca(texto):
         texto = str(texto).upper().strip()
-        for sep in ['|', '/', '+']: 
-            texto = texto.split(sep)[0]
-        # Remove palavras que tenham números (geralmente códigos de modelo)
+        for sep in ['|', '/', '+']: texto = texto.split(sep)[0]
         return " ".join([p for p in texto.split() if not any(c.isdigit() for c in p)]).strip()
         
     df_i['Marca'] = df_i['Marca'].apply(limpar_marca)
     df_i['Modelo'] = df_i['Modelo'].astype(str).str.strip()
+    if 'preco' not in df_i.columns: df_i['preco'] = 0.0
     
-    if 'preco' not in df_i.columns: 
-        df_i['preco'] = 0.0
-    
-    # Carrega Tarifas
     df_t = pd.read_csv("Tarifas.csv")
     df_t = df_t.dropna(subset=['estado'])
     df_t['estado'] = df_t['estado'].astype(str)
@@ -85,124 +74,92 @@ def carregar_dados():
 df_itens, df_tarifas = carregar_dados()
 
 if df_itens is None:
-    st.error("Erro: Arquivos CSV não encontrados ou colunas incorretas.")
+    st.error("Erro: Arquivos CSV não encontrados.")
     st.stop()
 
-# --- SIDEBAR (Configurações) ---
+# --- SIDEBAR ---
 with st.sidebar:
     st.header("Configurações")
-    
-    # Seleção de Local
     est_sel = st.selectbox("Estado", sorted(df_tarifas['estado'].unique()))
     dist_sel = st.selectbox("Distribuidora", sorted(df_tarifas[df_tarifas['estado'] == est_sel]['empresa'].unique()))
-    
-    # Seleção de Bandeira
     band_sel = st.selectbox("Bandeira Tarifária", ["Verde", "Amarela", "Vermelha P1", "Vermelha P2"])
-    
     st.divider()
-    
-    # Perfil de Uso
     horas = st.number_input("Horas de uso/dia", 1, 24, 8)
     dias = st.slider("Dias de uso/mês", 1, 30, 30)
 
-# --- CÁLCULO DA TARIFA ---
+# --- CÁLCULO TARIFA ---
 try:
     base = df_tarifas[(df_tarifas['estado'] == est_sel) & (df_tarifas['empresa'] == dist_sel)]['tarifa'].values[0]
-except: 
-    base = 0.85 # Valor padrão se der erro
-
+except: base = 0.85
 add = {"Verde": 0, "Amarela": 0.018, "Vermelha P1": 0.044, "Vermelha P2": 0.078}
 tarifa = base + add.get(band_sel, 0)
 
-# --- CABEÇALHO ---
 st.title("❄️ Comparador Inteligente de Climatização")
 st.caption(f"Tarifa calculada: R$ {tarifa:.3f}/kWh ({dist_sel})")
 st.divider()
 
-# --- FUNÇÃO DE BLOCO DE PRODUTO ---
+# --- BLOCO DE PRODUTO ---
 def bloco_produto(label, key):
     st.markdown(f"### Opção {label}")
-    
-    # Filtro Marca
     marcas = sorted(df_itens['Marca'].unique())
     marca = st.selectbox(f"Marca {label}", marcas, key=f"m{key}")
     
-    # Filtro BTU
     df_m = df_itens[df_itens['Marca'] == marca].copy()
     df_m['BTU_N'] = pd.to_numeric(df_m['BTU'], errors='coerce')
     btus = sorted(df_m['BTU_N'].dropna().unique())
-    
     if not btus: return None
     btu = st.selectbox(f"BTU {label}", btus, format_func=lambda x: f"{int(x)}", key=f"b{key}")
     
-    # Filtro Modelo
     df_b = df_m[df_m['BTU_N'] == btu]
     mods = sorted(df_b['Modelo'].unique())
-    
     if not mods: return None
     modelo = st.selectbox(f"Modelo {label}", mods, key=f"mod{key}")
     
-    # Pega dados do item selecionado
     item = df_b[df_b['Modelo'] == modelo].iloc[0]
     
-    # --- BOTÃO DE AFILIADO ---
     link_amazon = gerar_link_amazon(item['Marca'], item['Modelo'])
     st.link_button(f"🛒 Ver Preço na Amazon ({label})", link_amazon, type="primary")
     
-    # Input manual de preço
     preco = st.number_input(f"Preço Encontrado {label} (R$)", 0.0, step=50.0, key=f"p{key}")
     
-    # Cálculos financeiros
     cons_mensal = (item['Consumo']/365) * horas * dias
     custo_mensal = cons_mensal * tarifa
-    
     st.metric("Custo Energia/Mês", f"R$ {custo_mensal:.2f}")
     
     return {'p': preco, 'c': custo_mensal, 'nome': f"{marca} {modelo}", 'link': link_amazon}
 
-# --- LAYOUT DE DUAS COLUNAS ---
 c1, c2 = st.columns(2)
+with c1: res_a = bloco_produto("A", "a")
+with c2: res_b = bloco_produto("B", "b")
 
-with c1:
-    res_a = bloco_produto("A", "a")
-
-with c2:
-    res_b = bloco_produto("B", "b")
-
-# --- ANÁLISE FINAL ---
+# --- ANÁLISE ---
 st.divider()
-
 if res_a and res_b:
-    # Lógica de comparação
     diff = abs(res_a['c'] - res_b['c'])
     venc = "A" if res_a['c'] < res_b['c'] else "B"
     link_venc = res_a['link'] if venc == "A" else res_b['link']
     
     st.subheader("🏆 Veredito Financeiro")
-    
     col_res1, col_res2 = st.columns([1,1])
     
     with col_res1:
         st.success(f"A Opção **{venc}** é mais econômica na conta de luz.")
         st.info(f"Economia mensal: **R$ {diff:.2f}**")
-        
-        if diff > 0:
-            st.write(f"Em 5 anos, essa diferença vira **R$ {(diff * 60):.2f}** no seu bolso.")
-        
+        if diff > 0: st.write(f"Em 5 anos, essa diferença vira **R$ {(diff * 60):.2f}** no seu bolso.")
         st.markdown(f"👉 **Aproveite e compre a melhor opção:**")
         st.link_button(f"Comprar Opção {venc} na Amazon", link_venc)
 
     with col_res2:
-        # Gráfico de Projeção
-        meses = list(range(37)) # 3 anos (0 a 36)
+        meses = list(range(37))
         va = [res_a['p'] + (res_a['c']*m) for m in meses]
         vb = [res_b['p'] + (res_b['c']*m) for m in meses]
         
         fig = go.Figure()
         fig.add_trace(go.Scatter(x=meses, y=va, name="Opção A"))
         fig.add_trace(go.Scatter(x=meses, y=vb, name="Opção B"))
-        fig.update_layout(title="Gasto Total (Preço + Energia) em 3 Anos", height=300, margin=dict(l=20, r=20, t=30, b=20))
-        st.plotly_chart(fig, use_container_width=True)
+        
+        # --- CORREÇÃO AQUI (Width Stretch) ---
+        fig.update_layout(title="Gasto Total (3 Anos)", height=300, margin=dict(l=20, r=20, t=30, b=20))
+        st.plotly_chart(fig, width="stretch") # Corrigido conforme aviso
 
-# Rodapé
-st.markdown("<div class='fonte-dados'>Dados técnicos: INMETRO | Tarifas: ANEEL | Preços variam conforme o vendedor.</div>", unsafe_allow_html=True)
+st.markdown("<div class='fonte-dados'>Dados técnicos: INMETRO | Tarifas: ANEEL</div>", unsafe_allow_html=True)
