@@ -20,42 +20,33 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- GOOGLE ANALYTICS (Técnica JS Injection) ---
-# Esta função injeta o código diretamente na janela principal (window.parent)
-# enganando o bloqueio do Streamlit e permitindo que o Google detecte.
+# --- GOOGLE ANALYTICS (Modo Iframe Seguro) ---
+GA_ID = "G-8HXSH7QK7V"
 
-def inject_ga():
-    GA_ID = "G-8HXSH7QK7V" # Seu ID real
-
-    # O script Javascript que vai ser executado
-    js = f"""
+ga_html = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <script async src="https://www.googletagmanager.com/gtag/js?id={GA_ID}"></script>
     <script>
-        // Cria a tag script do Google
-        var script = window.parent.document.createElement('script');
-        script.type = 'text/javascript';
-        script.async = true;
-        script.src = 'https://www.googletagmanager.com/gtag/js?id={GA_ID}';
-        
-        // Injeta no <head> da página principal
-        var head = window.parent.document.getElementsByTagName('head')[0];
-        head.appendChild(script);
-        
-        // Configura o dataLayer globalmente
-        window.parent.dataLayer = window.parent.dataLayer || [];
-        function gtag(){{window.parent.dataLayer.push(arguments);}}
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){{dataLayer.push(arguments);}}
         gtag('js', new Date());
-        gtag('config', '{GA_ID}');
-        
-        console.log('Google Analytics injetado com sucesso: {GA_ID}');
+
+        // Configuração para rodar dentro do iframe do Streamlit
+        gtag('config', '{GA_ID}', {{
+            'cookie_flags': 'max-age=7200;SameSite=None;Secure'
+        }});
     </script>
-    """
-    
-    # Executa o JS dentro de um componente invisível
-    components.html(js, height=0, width=0)
+</head>
+<body>
+</body>
+</html>
+"""
 
-inject_ga()
+# Altura 0 para ficar invisível
+components.html(ga_html, height=0, width=0)
 # --- FIM DO ANALYTICS ---
-
 
 # --- FUNÇÕES DE CARREGAMENTO ---
 @st.cache_data
@@ -297,6 +288,7 @@ st.markdown("""
 </div>
 
 """, unsafe_allow_html=True)
+
 
 
 
