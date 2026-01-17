@@ -19,6 +19,22 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+
+GA_ID = "G-8HXSH7QK7V"
+
+ga_code = f"""
+<script async src="https://www.googletagmanager.com/gtag/js?id={GA_ID}"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){{dataLayer.push(arguments);}}
+  gtag('js', new Date());
+  gtag('config', '{GA_ID}');
+</script>
+"""
+st.markdown(ga_code, unsafe_allow_html=True)
+
+
+
 # --- FUNÇÕES DE CARREGAMENTO ---
 @st.cache_data
 def carregar_dados():
@@ -259,3 +275,4 @@ st.markdown("""
 </div>
 
 """, unsafe_allow_html=True)
+
