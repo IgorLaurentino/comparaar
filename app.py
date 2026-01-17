@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 import plotly.graph_objects as go
 import os
@@ -19,7 +20,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-
+# --- GOOGLE ANALYTICS (Modo Componente - Força a execução) ---
 GA_ID = "G-8HXSH7QK7V"
 
 ga_code = f"""
@@ -31,7 +32,10 @@ ga_code = f"""
   gtag('config', '{GA_ID}');
 </script>
 """
-st.markdown(ga_code, unsafe_allow_html=True)
+
+# Usa components.html em vez de st.markdown
+components.html(ga_code, height=0, width=0)
+# --- FIM DO ANALYTICS ---
 
 
 
@@ -275,4 +279,5 @@ st.markdown("""
 </div>
 
 """, unsafe_allow_html=True)
+
 
