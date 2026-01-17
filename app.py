@@ -86,7 +86,7 @@ with st.sidebar:
     if est_sel == "Selecione":
         dist_sel = None
         band_sel = "Verde"
-        st.warning("👈 Comece selecionando seu Estado.")
+        st.warning(" Comece selecionando seu Estado.")
     else:
         # 2. Distribuidora
         lista_dist = ["Selecione"] + sorted(df_tarifas[df_tarifas['estado'] == est_sel]['empresa'].unique())
@@ -103,7 +103,7 @@ with st.sidebar:
 # Se o usuário não escolheu a distribuidora, paramos o app aqui para ficar limpo
 if est_sel == "Selecione" or dist_sel == "Selecione":
     st.title("❄️ Comparador Inteligente de Climatização")
-    st.info("👋 Bem-vindo! Para começar, selecione seu **Estado** e **Distribuidora** de energia na barra lateral esquerda.")
+    st.info(" Bem-vindo! Para começar, selecione seu **Estado** e **Distribuidora** de energia na barra lateral esquerda.")
     st.stop()
 
 # --- CÁLCULO TARIFA ---
@@ -173,7 +173,7 @@ with c2: res_b = bloco_produto("B", "b")
 st.divider()
 
 if res_a is not None and res_b is not None:
-    st.subheader("🏆 Veredito Financeiro")
+    st.subheader("A melhor opção:")
     
     col_res1, col_res2 = st.columns([1,1])
     
@@ -187,7 +187,7 @@ if res_a is not None and res_b is not None:
             st.write("Escolha modelos diferentes para ver a comparação de economia.")
             
         elif empate_tecnico:
-            st.info("⚖️ **Empate Técnico!**")
+            st.info(" **Empate Técnico!**")
             st.write("Mesmo consumo e mesmo preço. Escolha pelo design ou marca de preferência.")
             
         else:
@@ -218,6 +218,7 @@ if res_a is not None and res_b is not None:
 
 else:
     # Mensagem de rodapé quando ainda não completou
-    st.info("👆 Selecione as opções A e B acima para ver o resultado da comparação.")
+    st.info(" Selecione as opções A e B acima para ver o resultado da comparação.")
 
 st.markdown("<div class='fonte-dados'>Dados técnicos: INMETRO | Tarifas: ANEEL</div>", unsafe_allow_html=True)
+
