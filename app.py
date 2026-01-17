@@ -20,23 +20,41 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- GOOGLE ANALYTICS (Modo Componente - Força a execução) ---
-GA_ID = "G-8HXSH7QK7V"
+# --- GOOGLE ANALYTICS (Técnica JS Injection) ---
+# Esta função injeta o código diretamente na janela principal (window.parent)
+# enganando o bloqueio do Streamlit e permitindo que o Google detecte.
 
-ga_code = f"""
-<script async src="https://www.googletagmanager.com/gtag/js?id={GA_ID}"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){{dataLayer.push(arguments);}}
-  gtag('js', new Date());
-  gtag('config', '{GA_ID}');
-</script>
-"""
+def inject_ga():
+    GA_ID = "G-8HXSH7QK7V" # Seu ID real
 
-# Usa components.html em vez de st.markdown
-components.html(ga_code, height=0, width=0)
+    # O script Javascript que vai ser executado
+    js = f"""
+    <script>
+        // Cria a tag script do Google
+        var script = window.parent.document.createElement('script');
+        script.type = 'text/javascript';
+        script.async = true;
+        script.src = 'https://www.googletagmanager.com/gtag/js?id={GA_ID}';
+        
+        // Injeta no <head> da página principal
+        var head = window.parent.document.getElementsByTagName('head')[0];
+        head.appendChild(script);
+        
+        // Configura o dataLayer globalmente
+        window.parent.dataLayer = window.parent.dataLayer || [];
+        function gtag(){{window.parent.dataLayer.push(arguments);}}
+        gtag('js', new Date());
+        gtag('config', '{GA_ID}');
+        
+        console.log('Google Analytics injetado com sucesso: {GA_ID}');
+    </script>
+    """
+    
+    # Executa o JS dentro de um componente invisível
+    components.html(js, height=0, width=0)
+
+inject_ga()
 # --- FIM DO ANALYTICS ---
-
 
 
 # --- FUNÇÕES DE CARREGAMENTO ---
@@ -279,5 +297,6 @@ st.markdown("""
 </div>
 
 """, unsafe_allow_html=True)
+
 
 
