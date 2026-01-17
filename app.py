@@ -135,7 +135,7 @@ with c2: res_b = bloco_produto("B", "b")
 # --- ANÁLISE ---
 st.divider()
 if res_a and res_b:
-    st.subheader("🏆 Veredito Financeiro")
+    st.subheader("A melhor opção")
     
     col_res1, col_res2 = st.columns([1,1])
     
@@ -181,3 +181,4 @@ if res_a and res_b:
         st.plotly_chart(fig, width="stretch")
 
 st.markdown("<div class='fonte-dados'>Dados técnicos: INMETRO | Tarifas: ANEEL</div>", unsafe_allow_html=True)
+
