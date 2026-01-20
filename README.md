@@ -2,7 +2,7 @@
 
 Bem-vindo ao repositório do **Comparador de Climatização**, uma ferramenta desenvolvida para ajudar consumidores e instaladores a escolherem o ar-condicionado mais eficiente financeiramente.
 
-🔗 **Acesse a aplicação aqui: https://comparaar.streamlit.app/
+🔗 **Acesse a aplicação aqui: https://comparaar.streamlit.app/ ou https://bit.ly/compara-ar
 
 ## 🎯 Objetivo
 Muitas vezes, o ar-condicionado mais barato na loja é o que gera a conta de luz mais cara no final do mês. Este projeto cruza dados técnicos de consumo com as tarifas de energia de cada estado brasileiro para calcular o **Custo Total de Propriedade (TCO)** e o **Payback** de modelos mais eficientes.
