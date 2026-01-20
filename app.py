@@ -7,7 +7,7 @@ import os
 st.set_page_config(page_title="Comparador de Ar Condicionado", page_icon="❄️", layout="wide")
 
 # ==========================================
-# 💰 CONFIGURAÇÃO DE AFILIADO (SECRETS)
+#  CONFIGURAÇÃO DE AFILIADO (SECRETS)
 try:
     AMAZON_TAG = st.secrets["AMAZON_TAG"]
 except:
@@ -199,3 +199,4 @@ st.markdown("""
     <p>Participamos do Programa de Associados da Amazon Services LLC, um programa de afiliados projetado para fornecer um meio de ganharmos taxas vinculando à Amazon.com.br e sites afiliados.</p>
 </div>
 """, unsafe_allow_html=True)
+
