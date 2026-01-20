@@ -18,9 +18,7 @@ except:
 # --- ESTILIZAÇÃO CSS (VISUAL HARMONIZADO) ---
 st.markdown("""
 <style>
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    .stDeployButton {display:none;}
+  
     
     .main { background-color: #f8f9fa; }
     
@@ -300,3 +298,4 @@ st.markdown("""
     <p>Participamos do Programa de Associados da Amazon Services LLC. Links apresentados podem gerar comissão sem custo adicional ao usuário.</p>
 </div>
 """, unsafe_allow_html=True)
+
